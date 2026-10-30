@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "local.monitor-layout",
+  "name": "Monitor Layout",
+  "version": "1.1.0",
+  "author": "Local",
+  "description": "Arrange displays, choose refresh rates and set per-monitor scaling with a safe preview.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {"barWidget": "WidgetV2.qml"},
+  "barWidget": {
+    "displayName": "Monitor Layout",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
