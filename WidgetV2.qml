@@ -30,7 +30,7 @@ Panel {
       var event=JSON.parse(data)
       if(event.event==='error') {editor.message=event.message; editor.failed=true; return}
       if(event.event==='displays') {editor.load(event.displays); editor.primaryName=event.primary || ''; received=true}
-      if(event.event==='primarySaved') {editor.primaryName=event.primary; editor.message='Primary monitor saved. Workspaces 1–10 now use '+event.primary+'.'; editor.failed=false}
+      if(event.event==='primarySaved') {editor.primaryName=event.primary; editor.message=event.scope === 'XWayland' ? 'XWayland primary saved: '+event.primary+'. Wayland workspace behavior is unchanged.' : 'Primary monitor saved. Workspaces 1–10 now use '+event.primary+'.'; editor.failed=false}
       if(event.event==='preview') {editor.previewing=true; editor.seconds=event.seconds; editor.message=''; root.open()}
       if(event.event==='tick') editor.seconds=event.seconds
       if(event.event==='kept') {editor.previewing=false; editor.original=JSON.parse(JSON.stringify(editor.displays)); editor.message='Layout saved. Your previous configuration was backed up.'; editor.failed=false}

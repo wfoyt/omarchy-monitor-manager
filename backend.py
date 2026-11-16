@@ -251,7 +251,11 @@ def primary_policy():
 
 def read_primary():
     path = primary_policy()
-    if not path.exists(): return ''
+    if not path.exists():
+        path = config_path().with_name('autostart.lua')
+        if not path.exists(): return ''
+        match = re.search(r'^-- local.monitor-layout XWayland primary: ([A-Za-z0-9._-]+)$', path.read_text(), re.M)
+        return match[1] if match else ''
     match = re.search(r'^local primary = "([A-Za-z0-9._-]+)"$', path.read_text(), re.M)
     return match[1] if match else ''
 
@@ -274,6 +278,8 @@ def primary_config(original, name, connected):
 
 def set_primary(name):
     path = primary_policy()
+    if not path.exists():
+        return set_xwayland_primary(name)
     if not path.exists() or path.is_symlink():
         raise ValueError('A regular dual-monitor.lua workspace policy is required')
     connected = [m['name'] for m in normalize(monitors())]
@@ -303,6 +309,31 @@ def set_primary(name):
                 hypr('dispatch', 'moveworkspacetomonitor', selector+' '+workspace['monitor'])
         raise
     emit(event='primarySaved', primary=name, backup=str(backup))
+
+
+def set_xwayland_primary(name):
+    if not NAME.fullmatch(name) or name not in [m['name'] for m in normalize(monitors())]:
+        raise ValueError('Choose a connected display')
+    path = config_path().with_name('autostart.lua')
+    if path.is_symlink(): raise ValueError('Autostart configuration must be a regular file')
+    original = path.read_text() if path.exists() else ''
+    pattern = re.compile(r'\n?-- BEGIN local.monitor-layout XWayland primary\n.*?-- END local.monitor-layout XWayland primary\n?', re.S)
+    updated = pattern.sub('\n', original).rstrip() + '\n\n'
+    updated += '-- BEGIN local.monitor-layout XWayland primary\n-- local.monitor-layout XWayland primary: ' + name + '\n'
+    updated += 'o.launch_on_start("xrandr --output ' + name + ' --primary")\n-- END local.monitor-layout XWayland primary\n'
+    backup = path.with_name(path.name+'.before-monitor-layout-'+str(time.time_ns()))
+    atomic_write(backup, original)
+    try:
+        subprocess.run(['xrandr', '--output', name, '--primary'], check=True, capture_output=True, text=True, timeout=8)
+        atomic_write(path, updated)
+        hypr('reload')
+        errors = hypr('configerrors')
+        if errors: raise RuntimeError(errors)
+    except Exception:
+        atomic_write(path, original)
+        hypr('reload')
+        raise
+    emit(event='primarySaved', primary=name, backup=str(backup), scope='XWayland')
 
 
 def main():

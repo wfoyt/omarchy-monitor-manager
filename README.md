@@ -60,4 +60,6 @@ Version 1.0.2 moves the arrangement canvas outside the scrolling settings and us
 
 ## Primary monitor
 
-Select a monitor and choose **Make primary**. This saves your existing dual-monitor workspace policy: workspaces 1–10 and their shortcuts follow the primary display; the other display keeps the dedicated workspace. The policy is backed up before applying, and failures restore it. Complete or discard layout edits before changing primary. This is a workspace preference, not a universal Wayland primary flag.
+Select a monitor and choose **Make primary**. If you have an existing compatible dual-monitor workspace policy, this updates it: workspaces 1–10 and their shortcuts follow the primary display; the other display keeps the dedicated workspace. The policy is backed up before applying, and failures restore it. Complete or discard layout edits before changing primary. This is a workspace preference, not a universal Wayland primary flag.
+
+Without that custom policy, **Make primary** sets the XWayland primary output now and at login. Wayland applications and Omarchy’s per-monitor workspace assignments are unaffected.
